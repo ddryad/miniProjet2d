@@ -1,8 +1,8 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
@@ -10,16 +10,15 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody2D rb;
     private Animator anim;
+    private SpriteRenderer sprite;
     private float horizontalInput;
     private bool jumpRequested;
-
-    // Cache the parameter name for better performance
-    private static readonly int IsWalkingHash = Animator.StringToHash("isWalking");
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        sprite = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
@@ -30,7 +29,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Maintain gravity/vertical velocity while setting horizontal speed
         rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
 
         if (jumpRequested)
@@ -42,23 +40,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void ReadInput()
     {
-        if (Keyboard.current == null)
-        {
-            horizontalInput = 0f;
-            return;
-        }
+        horizontalInput = Input.GetAxisRaw("Horizontal");
 
-        horizontalInput = 0f;
-
-        // Left / Right inputs
-        if (Keyboard.current.leftArrowKey.isPressed || Keyboard.current.aKey.isPressed)
-            horizontalInput = -1f;
-
-        if (Keyboard.current.rightArrowKey.isPressed || Keyboard.current.dKey.isPressed)
-            horizontalInput = 1f;
-
-        // Jump input using wasPressedThisFrame (equivalent to GetButtonDown)
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (Input.GetButtonDown("Jump"))
         {
             jumpRequested = true;
         }
@@ -66,18 +50,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateVisuals()
     {
-        // Toggle walking animation
         bool isWalking = Mathf.Abs(horizontalInput) > 0.01f;
-        anim.SetBool(IsWalkingHash, isWalking);
+        anim.SetBool("isWalking", isWalking);
 
-        // Flip sprite facing direction
         if (horizontalInput > 0.01f)
-        {
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
+            sprite.flipX = false;
         else if (horizontalInput < -0.01f)
-        {
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
+            sprite.flipX = true;
     }
 }

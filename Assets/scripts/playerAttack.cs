@@ -1,31 +1,57 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class PlayerAttack : MonoBehaviour
 {
-    private Animator anim;
+    [SerializeField] private Transform attackPoint;
+    [SerializeField, Min(0.1f)] private float attackRange = 0.6f;
 
-    // Cache the animation trigger hash for performance
-    private static readonly int AttackTriggerHash = Animator.StringToHash("playerAttack");
+    private Animator anim;
+    private SpriteRenderer sprite;
+    private float attackPointOffsetX;
 
     private void Awake()
     {
         anim = GetComponent<Animator>();
+        sprite = GetComponent<SpriteRenderer>();
+        attackPointOffsetX = attackPoint.localPosition.x;
     }
 
     private void Update()
     {
-        HandleAttackInput();
+        FlipAttackPoint();
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            anim.SetTrigger("playerAttack");
+        }
     }
 
-    private void HandleAttackInput()
+    private void FlipAttackPoint()
     {
-        if (Keyboard.current == null) return;
+        Vector3 localPos = attackPoint.localPosition;
+        localPos.x = sprite.flipX ? -attackPointOffsetX : attackPointOffsetX;
+        attackPoint.localPosition = localPos;
+    }
 
-        if (Keyboard.current.eKey.wasPressedThisFrame)
+    public void OnAttackHit()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange);
+
+        foreach (Collider2D hit in hits)
         {
-            anim.SetTrigger(AttackTriggerHash);
+            if (hit.CompareTag("Tree"))
+            {
+                hit.GetComponent<Tree>()?.Hit();
+            }
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null) return;
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
 }
