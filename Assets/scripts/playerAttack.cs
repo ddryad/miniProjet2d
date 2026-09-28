@@ -45,6 +45,10 @@ public class PlayerAttack : MonoBehaviour
             {
                 hit.GetComponent<Tree>()?.Hit();
             }
+            else if (hit.CompareTag("Enemy"))
+            {
+                hit.GetComponent<EnnemiMobile>()?.Mourir();
+            }
         }
     }
 

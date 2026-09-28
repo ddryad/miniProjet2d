@@ -7,6 +7,8 @@ TagManager:
   - Tree
   - Ground
   - Pot
+  - Ennemy
+  - Enemy
   layers:
   - Default
   - TransparentFX

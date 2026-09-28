@@ -43,4 +43,9 @@ public class InventoryManager : MonoBehaviour
     {
         return quantities.TryGetValue(type, out int value) ? value : 0;
     }
+
+    public void ClearInventory()
+    {
+        quantities.Clear();
+    }
 }

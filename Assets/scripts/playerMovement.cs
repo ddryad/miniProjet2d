@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer sprite;
     private float horizontalInput;
     private bool jumpRequested;
+    private bool controlsEnabled = true;
 
     private void Awake()
     {
@@ -29,6 +30,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!controlsEnabled)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
 
         if (jumpRequested)
@@ -40,6 +47,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void ReadInput()
     {
+        if (!controlsEnabled)
+        {
+            horizontalInput = 0f;
+            return;
+        }
+
         horizontalInput = Input.GetAxisRaw("Horizontal");
 
         if (Input.GetButtonDown("Jump"))
@@ -50,12 +63,24 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateVisuals()
     {
-        bool isWalking = Mathf.Abs(horizontalInput) > 0.01f;
+        bool isWalking = controlsEnabled && Mathf.Abs(horizontalInput) > 0.01f;
         anim.SetBool("isWalking", isWalking);
 
         if (horizontalInput > 0.01f)
             sprite.flipX = false;
         else if (horizontalInput < -0.01f)
             sprite.flipX = true;
+    }
+
+    public void SetControlsEnabled(bool isEnabled)
+    {
+        controlsEnabled = isEnabled;
+
+        if (!isEnabled)
+        {
+            horizontalInput = 0f;
+            jumpRequested = false;
+            rb.linearVelocity = Vector2.zero;
+        }
     }
 }
